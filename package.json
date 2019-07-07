@@ -1,0 +1,15 @@
+{
+  "name": "bot-wawa",
+  "version": "1.0.0",
+  "description": "Un bot Discord",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "eloidrai",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.5.1"
+  },
+  "devDependencies": {}
+}
