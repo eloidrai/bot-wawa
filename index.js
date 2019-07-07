@@ -44,6 +44,7 @@ bot.on('message', (message)=>{
     } else if (message.content.substring(0,3) === "!dc"){
         let n = parseInt(message.content.substring(4));
         message.reply(`${n}°F = **${dc(n)}** °C`);
+    }
 })
 
 /*Nez*/
