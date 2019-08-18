@@ -19,7 +19,7 @@ bot.on('message', (message)=>{
     if (message.content === "!salut"){
         message.reply("Bonjour, je suis le robot d'Éloi Draï. Vous pouvez me faire accomplir quelques tâches...");
     } else if (message.content === "!source"){
-        message.channel.send("Mon code source est disponible sur **GitHub**. Pour en savoir plus sur mon fonctionnement, consulter `README.md`.\n https://github.com/eloi-discord/bot-wawa");
+        message.channel.send("Mon code source est disponible sur **GitHub**. Pour en savoir plus sur mon fonctionnement, consulter `README.md`.\n https://github.com/eloidrai/bot-wawa");
     } else if (message.content === "!site"){
         message.channel.send("**Ceci est le site d'eloidrai.**\n\thttps://eloidrai.github.io/\n*On y trouve différentes réalisations informatiques...*");
     }
