@@ -98,14 +98,14 @@ bot.on('message', (message)=>{
     /*Wolfram|Alpha*/
     if (message.content.toLowerCase().startsWith("!wa")){
         message.reply(`Voilà ce qu'en dit **Wolfram|Alpha : **
-${"https://www.wolframalpha.com/input/?i="+message.content.substr(4)}
+${"https://www.wolframalpha.com/input/?i="+encodeURIComponent(message.content.substr(4))}
 `)
     }
 
     /*Google*/
     if (message.content.toLowerCase().startsWith("!google")){
         message.reply(`Voilà la recherche **Google :**
-${"https://www.google.fr/search?q="+message.content.substr(8)}
+${"https://www.google.fr/search?q="+encodeURIComponent(message.content.substr(8))}
 `)
     }
 })
