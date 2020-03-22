@@ -48,7 +48,6 @@ bot.on('message', (message)=>{
         message.reply(`${n}°F = **${dc(n)}** °C`);
     }
 
-    
 
 /*Meteo*/
     if (message.content.toLowerCase().startsWith("!meteo")){
@@ -94,8 +93,20 @@ bot.on('message', (message)=>{
                 message.reply("Une erreur est survenue");
             }
         }
+    }
 
+    /*Wolfram|Alpha*/
+    if (message.content.toLowerCase().startsWith("!wa")){
+        message.reply(`Voilà ce qu'en dit **Wolfram|Alpha : **
+${"https://www.wolframalpha.com/input/?i="+message.content.substr(4)}
+`)
+    }
 
+    /*Google*/
+    if (message.content.toLowerCase().startsWith("!google")){
+        message.reply(`Voilà la recherche **Google :**
+${"https://www.google.fr/search?q="+message.content.substr(8)}
+`)
     }
 })
 
