@@ -6,8 +6,8 @@ const bot = new Discord.Client();
 const config = require('./config.json');
 
 /*Fonctions pour les conversions*/
-const deg = n=> n*180/PI;
-const rad = n=> n*PI/180;
+const deg = n=> n*180/Math.PI;
+const rad = n=> n*Math.PI/180;
 const df = c=> (9/5)*c+32;
 const dc = f=> (f-32)/(9/5);
 
