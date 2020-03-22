@@ -6,8 +6,8 @@ const bot = new Discord.Client();
 const config = require('./config.json');
 
 /*Fonctions pour les conversions*/
-const deg = n=> n*180/Math.PI;
-const rad = n=> n*Math.PI/180;
+const deg = n=> n*180/PI;
+const rad = n=> n*PI/180;
 const df = c=> (9/5)*c+32;
 const dc = f=> (f-32)/(9/5);
 
@@ -74,7 +74,28 @@ bot.on('message', (message)=>{
 
     }
 
-    
+    /*Calculs*/
+    const foncAutorisees = ["Math", "E", "LN10", "LN2", "LOG10E", "LOG2E", "PI", "SQRT1_2", "SQRT2", "abs", "acos", "acosh", "asin", "asinh", "atan", "atan2", "atanh", "cbrt", "ceil", "clz32", "cos", "cosh", "exp", "expm1", "floor", "fround", "hypot", "imul", "log", "log10", "log1p", "log2", "max", "min", "pow", "random", "round", "sign", "sin", "sinh", "sqrt", "tan", "tanh", "trunc", "BigInt", "n"];
+
+   if (message.content.toLowerCase().startsWith("!calc")) {
+        const exp = message.content.substr(6);
+        try {
+            const lettres = /[a-z]+/gi
+            if ((exp.match(lettres) || []).some((e)=>(foncAutorisees.indexOf(e)===-1))) {
+                throw new Error("Danger");
+            } else {
+                message.reply(eval(exp))
+            }
+        } catch (err) {
+            if (err.message === "Danger"){
+                message.reply("Cette expression a été bloquée pour des raisons de sécurité")
+            } else {
+                message.reply("Une erreur est survenue");
+            }
+        }
+
+
+    }
 })
 
 /*Nez*/
