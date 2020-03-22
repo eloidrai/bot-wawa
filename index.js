@@ -63,12 +63,13 @@ bot.on('message', (message)=>{
                     message.channel.send(`**Infos météo pour ${rep.city_info.name}**
 > Température actuelle : ${rep.current_condition.tmp}°C
 > Pression : ${rep.current_condition.pressure} hPa
-> Humidité : ${rep.current_condition.humidity}
+> Humidité : ${rep.current_condition.humidity}%
 
 > Vitesse du vent : ${rep.current_condition.wnd_spd} km/h
 > Direction du vent : ${rep.current_condition.wnd_dir}
 
-> En bref : ${rep.current_condition.condition}`);
+> En bref : ${rep.current_condition.condition}`, {files: [rep.current_condition.icon_big]}
+);
                 }
             })
 
