@@ -1,4 +1,6 @@
 const Discord = require('discord.js');
+const fetch = require('node-fetch');
+
 const bot = new Discord.Client();
 
 const config = require('./config.json');
@@ -45,6 +47,34 @@ bot.on('message', (message)=>{
         let n = parseInt(message.content.substring(4));
         message.reply(`${n}°F = **${dc(n)}** °C`);
     }
+
+    
+
+/*Meteo*/
+    if (message.content.toLowerCase().startsWith("!meteo")){
+        const req = message.content.split(" ");
+        const ville = req[1] || "Caen";
+        fetch("https://www.prevision-meteo.ch/services/json/"+ville)
+            .then(rep=>rep.json())
+            .then(rep=> {
+                if ("errors" in rep) {
+                    message.channel.send("Je n'ai pas trouvé cette ville.");
+                } else {
+                    message.channel.send(`**Infos météo pour ${rep.city_info.name}**
+> Température actuelle : ${rep.current_condition.tmp}°C
+> Pression : ${rep.current_condition.pressure} hPa
+> Humidité : ${rep.current_condition.humidity}
+
+> Vitesse du vent : ${rep.current_condition.wnd_spd} km/h
+> Direction du vent : ${rep.current_condition.wnd_dir}
+
+> En bref : ${rep.current_condition.condition}`);
+                }
+            })
+
+    }
+
+    
 })
 
 /*Nez*/
