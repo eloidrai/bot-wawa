@@ -83,7 +83,18 @@ ${"https://www.wolframalpha.com/input/?i="+encodeURIComponent(args.join(""))}`)
             }
         }
     }
-})
+    
+    /*Abonnement aux nez*/
+    if (cmd === 'nez'){
+        if (args[0] === 'on'){
+            nez.push(message.channel);
+            message.channel.send("Ce salon est désormais abonné aux **rappels de nez**...");
+        } else if (args[0] === 'off'){
+            nez = nez.filter((i)=> (i!==message.channel));
+            message.channel.send("Ce salon est désabonné des **rappels de nez**...");
+        }
+    }
+});
 
 /*Nez*/
 var nez = [];
