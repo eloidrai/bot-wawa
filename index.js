@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const fetch = require('node-fetch');
+const cron = require('node-cron');
 
 const bot = new Discord.Client();
 
@@ -94,7 +95,43 @@ ${"https://www.wolframalpha.com/input/?i="+encodeURIComponent(args.join(""))}`)
             message.channel.send("Ce salon est désabonné des **rappels de nez**...");
         }
     }
+
+    /*Covid-19*/
+    if (cmd === 'covid-19'){
+        args[0] = args[0].toUpperCase();
+        if (args[0] in Covid19.pays || !args[0]){
+            const data = (args[0])? Covid19.pays[args[0]]: Covid19.glob;
+            const embed = new Discord.MessageEmbed();
+            embed.setTitle(`La pandémie de COVID-19 au ${(new Intl.DateTimeFormat('fr-FR')).format(Covid19.date)} :earth_americas: ${data.nom}`)
+                .setColor('#AA0000')
+                .addFields([
+                    {
+                        name: ":sick: Malades",
+                        value: `**Nombre total :** ${data.malades[1]}
+**Malades supplémentaires :** ${data.malades[1]-data.malades[0]}`
+                    },
+                    {
+                        name: ":skull: Morts",
+                        value: `**Nombre total :** ${data.morts[1]}
+**Nouveaux décès :** ${data.morts[1]-data.morts[0]}`
+                    },
+                    {
+                        name: ":slight_smile: Personnes rétablies",
+                        value: `**Nombre total :** ${data.gueris[1]}
+**Nouveaux rétablissements :** ${data.gueris[1]-data.gueris[0]}`
+                    }
+                ])
+                .setFooter(`Ces chiffres sous-estiment la réalité
+Source : Johns Hopkins (CSSE)`);
+            message.channel.send(JSON.stringify(data));
+            message.channel.send(embed);
+        } else {
+            message.channel.send("Je n'ai pas d'informations sur ce pays.");
+        }
+    }
+
 });
+
 
 /*Nez*/
 var nez = [];
@@ -110,4 +147,44 @@ bot.setInterval(
     60000
 )
 
+
+/*Récupération des données du Covid-19*/
+const Covid19 = {
+    links: {
+        "malades":"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv",
+        "morts":"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv",
+        "gueris":"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"
+    },
+    async getData(donnee) {
+        this.pays = {}
+        this.glob = {}
+        for (const d in this.links){
+            const raw = await fetch(this.links[d]).then(res=>res.text());
+            const tab = raw.split("\n").map(e=> e.split(","));
+            this.date = new Date(tab[0][tab[0].length-1]);
+            for (const ligne of tab){
+                if (ligne[1] === 'Country/Region' || ligne[1] === undefined) continue;
+                const clee = ligne[1].toUpperCase();
+                this.pays[clee] = this.pays[clee] || {};
+                this.pays[clee][d] = this.pays[clee][d] || [0, 0];
+                this.glob[d] = this.glob[d] || [0, 0];
+                this.pays[clee][d][0] += parseInt(ligne[ligne.length-2]);
+                this.pays[clee][d][1] += parseInt(ligne[ligne.length-1]);
+                this.pays[clee].nom = ligne[1];
+                this.glob[d][0] += parseInt(ligne[ligne.length-2]);
+                this.glob[d][1] += parseInt(ligne[ligne.length-1]);
+                this.glob.nom = "Le Monde";
+            }
+        }
+        console.log(this.pays, this.glob);
+    }
+
+
+
+}
+
+Covid19.getData();
+
+
+/*Connexion à bot-wawa*/
 bot.login(config.token)
