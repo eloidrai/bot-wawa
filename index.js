@@ -14,8 +14,12 @@ bot.once('ready',
 )
 
 bot.on('message', (message)=>{
-    if (!message.content.startsWith(config.prefix)) return;
-    const args = message.content.slice(config.prefix.length).split(/ +/), cmd = args.shift().toLowerCase();
+    let guildId;
+    try {guildId = message.channel.guild.id}
+    catch (e) {guildId = NaN}
+    const prefix = (guildId == 401667451189985280)? `~`: config.prefix;
+    if (!message.content.startsWith(prefix)) return;
+    const args = message.content.slice(prefix.length).split(/ +/), cmd = args.shift().toLowerCase();
     
     /*À propos*/
     if (cmd === 'salut'){
@@ -98,9 +102,9 @@ ${"https://www.wolframalpha.com/input/?i="+encodeURIComponent(args.join(""))}`)
 
     /*Covid-19*/
     if (cmd === 'covid-19'){
-        args[0] = args[0].toUpperCase();
-        if (args[0] in Covid19.pays || !args[0]){
-            const data = (args[0])? Covid19.pays[args[0]]: Covid19.glob;
+        const pays = args.join(" ").toUpperCase() || "ww";
+        if (pays in Covid19.pays){
+            const data = Covid19.pays[pays];
             const embed = new Discord.MessageEmbed();
             embed.setTitle(`La pandémie de COVID-19 au ${(new Intl.DateTimeFormat('fr-FR')).format(Covid19.date)} :earth_americas: ${data.nom}`)
                 .setColor('#AA0000')
@@ -123,10 +127,15 @@ ${"https://www.wolframalpha.com/input/?i="+encodeURIComponent(args.join(""))}`)
                 ])
                 .setFooter(`Ces chiffres sous-estiment la réalité
 Source : Johns Hopkins (CSSE)`);
-            message.channel.send(JSON.stringify(data));
+//            message.channel.send(JSON.stringify(data));
             message.channel.send(embed);
         } else {
-            message.channel.send("Je n'ai pas d'informations sur ce pays.");
+            const l = [];
+            for (const i in Covid19.pays){
+                l.push(Covid19.pays[i].nom)
+            }
+            l.shift()
+            message.channel.send("Je n'ai pas d'informations sur ce pays. Voici la liste des pays disponibles ```"+l.join(", ")+"```")
         }
     }
 
@@ -157,7 +166,7 @@ const Covid19 = {
     },
     async getData(donnee) {
         this.pays = {}
-        this.glob = {}
+        this.pays.ww = {}
         for (const d in this.links){
             const raw = await fetch(this.links[d]).then(res=>res.text());
             const tab = raw.split("\n").map(e=> e.split(","));
@@ -167,24 +176,21 @@ const Covid19 = {
                 const clee = ligne[1].toUpperCase();
                 this.pays[clee] = this.pays[clee] || {};
                 this.pays[clee][d] = this.pays[clee][d] || [0, 0];
-                this.glob[d] = this.glob[d] || [0, 0];
+                this.pays.ww[d] = this.pays.ww[d] || [0, 0];
                 this.pays[clee][d][0] += parseInt(ligne[ligne.length-2]);
                 this.pays[clee][d][1] += parseInt(ligne[ligne.length-1]);
                 this.pays[clee].nom = ligne[1];
-                this.glob[d][0] += parseInt(ligne[ligne.length-2]);
-                this.glob[d][1] += parseInt(ligne[ligne.length-1]);
-                this.glob.nom = "Le Monde";
+                this.pays['ww'][d][0] += parseInt(ligne[ligne.length-2]);
+                this.pays['ww'][d][1] += parseInt(ligne[ligne.length-1]);
+                this.pays['ww'].nom = "Le Monde";
             }
         }
-        console.log(this.pays, this.glob);
     }
-
-
-
 }
 
 Covid19.getData();
 
+cron.schedule("5 2 * * *", ()=> Covid19.getData())
 
 /*Connexion à bot-wawa*/
 bot.login(config.token)

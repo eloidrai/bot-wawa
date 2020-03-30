@@ -13,6 +13,7 @@
 * _!calc_ - Évalue l'expression JS (seules les fonctions mathématiques sont autorisées)
 * _!wa_ - Recherche l'expression sur Wolfram|Alpha
 * _!google_ - Effectue une recherche Google.
+* _!covid-19 [pays en anglais]_ - Affiche le bilan actuel de la pandémie dans le pays
 
 ## Utilisation
 
