@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const fetch = require('node-fetch');
 const cron = require('node-cron');
+const dictcc = require('dictcc-js');
 
 const bot = new Discord.Client();
 
@@ -14,10 +15,12 @@ bot.once('ready',
 )
 
 bot.on('message', (message)=>{
+    /*Obligation légale (ribt)*/
     let guildId;
-    try {guildId = message.channel.guild.id}
-    catch (e) {guildId = NaN}
+    try {guildId = message.channel.guild.id} catch (e) {guildId = NaN}
     const prefix = (guildId == 401667451189985280)? `~`: config.prefix;
+    
+    /*Préfixe, commande et paramètre*/
     if (!message.content.startsWith(prefix)) return;
     const args = message.content.slice(prefix.length).split(/ +/), cmd = args.shift().toLowerCase();
     
@@ -36,36 +39,66 @@ https://github.com/eloidrai/bot-wawa`);
     /*Google*/
     if (cmd === 'google'){
         message.reply(`Voilà la recherche **Google :**
-${"https://www.google.fr/search?q="+encodeURIComponent(args.join(" "))}`)
+${"https://www.google.fr/search?q="+encodeURIComponent(args.join(" "))}`);
+        return;
     }
     
     /*Wolfram|Alpha*/
     if (cmd === 'wa'){
         message.reply(`Voilà ce qu'en dit **Wolfram|Alpha : **
-${"https://www.wolframalpha.com/input/?i="+encodeURIComponent(args.join(""))}`)
+${"https://www.wolframalpha.com/input/?i="+encodeURIComponent(args.join(""))}`);
+        return;
     }
     
     /*Météo*/
     if (cmd === 'meteo'){
         const ville = args[0] || "Caen";
+        const embed = new Discord.MessageEmbed();
         fetch("https://www.prevision-meteo.ch/services/json/"+ville)
             .then(rep=>rep.json())
             .then(rep=> {
                 if ('errors' in rep) {
-                    message.channel.send(`Je n'ai pas trouvé cette ville.`);
+                    throw new rep['errors'];
                 } else {
-                    message.channel.send(`**Infos météo pour ${rep.city_info.name}**
-> Température actuelle : ${rep.current_condition.tmp}°C
-> Pression : ${rep.current_condition.pressure} hPa
-> Humidité : ${rep.current_condition.humidity}%
-
-> Vitesse du vent : ${rep.current_condition.wnd_spd} km/h
-> Direction du vent : ${rep.current_condition.wnd_dir}
-
-> En bref : ${rep.current_condition.condition}`, {files: [rep.current_condition.icon_big]});
+                    embed.setTitle(`Infos météo pour ${rep.city_info.name}`)
+                        .setColor('#00DD88')
+                        .setThumbnail(rep.current_condition.icon_big)
+                        .addFields([
+                            {
+                                name: `Température actuelle`,
+                                value: `${rep.current_condition.tmp}°C`
+                            },
+                            {
+                                name: `Pression`,
+                                value: `${rep.current_condition.pressure} hPa`
+                            },
+                            {
+                                name: `Humidité`,
+                                value: `${rep.current_condition.humidity}°C`
+                            },
+                            {
+                                name: `Vitesse du vent`,
+                                value: `${rep.current_condition.wnd_spd} km/h`
+                            },
+                            {
+                                name: `Direction du vent`,
+                                value: `${rep.current_condition.wnd_dir}`
+                            },
+                            {
+                                name: `En bref`,
+                                value: `${rep.current_condition.condition}`
+                            }
+                        ])
                 }
+            })
+            .catch((err)=>{
+                embed.setTitle(`Je n'ai pas trouvé cette ville. :(`)
+                    .setColor('#00DD88');
+            })
+            .then((p)=>{
+                message.channel.send(embed);
             });
-
+        return;
     }
     
     /*Calculs*/
@@ -87,6 +120,7 @@ ${"https://www.wolframalpha.com/input/?i="+encodeURIComponent(args.join(""))}`)
                 message.reply(`Une erreur est survenue`);
             }
         }
+        return;
     }
     
     /*Abonnement aux nez*/
@@ -98,15 +132,16 @@ ${"https://www.wolframalpha.com/input/?i="+encodeURIComponent(args.join(""))}`)
             nez = nez.filter((i)=> (i!==message.channel));
             message.channel.send("Ce salon est désabonné des **rappels de nez**...");
         }
+        return;
     }
 
     /*Covid-19*/
     if (cmd === 'covid-19'){
         const pays = args.join(" ").toUpperCase() || "ww";
+        const embed = new Discord.MessageEmbed();
         if (pays in Covid19.pays){
             const data = Covid19.pays[pays];
-            const embed = new Discord.MessageEmbed();
-            embed.setTitle(`La pandémie de COVID-19 au ${(new Intl.DateTimeFormat('fr-FR')).format(Covid19.date)} :earth_americas: ${data.nom}`)
+            embed.setTitle(`La pandémie de COVID-19 au ${(new Intl.DateTimeFormat('en-GB')).format(Covid19.date)} :earth_americas: ${data.nom}`)
                 .setColor('#AA0000')
                 .addFields([
                     {
@@ -125,20 +160,63 @@ ${"https://www.wolframalpha.com/input/?i="+encodeURIComponent(args.join(""))}`)
 **Nouveaux rétablissements :** ${data.gueris[1]-data.gueris[0]}`
                     }
                 ])
-                .setFooter(`Ces chiffres sous-estiment la réalité
+                .setFooter(`Ces chiffres sous-estiment la réalité.
 Source : Johns Hopkins (CSSE)`);
-//            message.channel.send(JSON.stringify(data));
-            message.channel.send(embed);
         } else {
             const l = [];
             for (const i in Covid19.pays){
                 l.push(Covid19.pays[i].nom)
             }
             l.shift()
-            message.channel.send("Je n'ai pas d'informations sur ce pays. Voici la liste des pays disponibles ```"+l.join(", ")+"```")
+            embed.setTitle(`Pays inconnu`)
+                .setColor('#AA0000')
+                .setDescription("Je n'ai pas d'informations sur ce pays. Voici la liste des pays disponibles ```"+l.join(", ")+"```");
         }
+        message.channel.send(embed);
+        return;
     }
 
+
+    /*Dictionnaire Dict.cc*/
+    if (cmd === 'trad') {
+        const embed = new Discord.MessageEmbed();
+        embed.setColor('#FF8C00');
+        let [l, ...mots] = args;
+        if (!mots || !l) return;
+        const terme = mots.join(" ");
+        l = l.split(/->?/);
+        if (l[0] && l[1] && terme) {
+            dictcc.translate(l[0], l[1], encodeURIComponent(terme), (res, err)=> {
+                if (err) {
+                    embed.setTitle("Erreur")
+                        .setDescription("Ces dictionnaires ne sont pas disponibles");
+                } else {
+                    embed.setTitle(`${terme.slice(0,1).toUpperCase()+terme.slice(1)} (${l[0].toUpperCase()}-${l[1].toUpperCase()})`)
+                    if (res.length) {
+
+                        const champs = [];
+                        let c = 0;
+                        for (const i in res) {
+                            if (i > 9) break;
+                            champs.push({name: `**${(+i+1)}.** ${res[i]['from']}`, value: res[i]['to'], inline: true});
+                        }
+                        embed.addFields(champs);
+                    } else {
+                        embed.setDescription("Aucun résultat")
+                    }
+                }
+                embed.setFooter("Source : dict.cc")
+                message.channel.send(embed);
+
+                
+            });
+        } else {
+            embed.setTitle("Erreur")
+                .setDescription("Nombre d'arguments incorrect");
+            message.channel.send(embed);
+        }
+        return;
+    }
 });
 
 
@@ -166,23 +244,23 @@ const Covid19 = {
     },
     async getData(donnee) {
         this.pays = {}
-        this.pays.ww = {}
-        for (const d in this.links){
+        this.pays['ww'] = {}
+        for (const d in this.links){                                            // d = l'infos (malades, morts...)
             const raw = await fetch(this.links[d]).then(res=>res.text());
             const tab = raw.split("\n").map(e=> e.split(","));
             this.date = new Date(tab[0][tab[0].length-1]);
+            this.pays['ww'].nom = "Échelle mondiale";
+            this.pays['ww'][d] = [0, 0];
             for (const ligne of tab){
                 if (ligne[1] === 'Country/Region' || ligne[1] === undefined) continue;
                 const clee = ligne[1].toUpperCase();
                 this.pays[clee] = this.pays[clee] || {};
                 this.pays[clee][d] = this.pays[clee][d] || [0, 0];
-                this.pays.ww[d] = this.pays.ww[d] || [0, 0];
                 this.pays[clee][d][0] += parseInt(ligne[ligne.length-2]);
                 this.pays[clee][d][1] += parseInt(ligne[ligne.length-1]);
                 this.pays[clee].nom = ligne[1];
                 this.pays['ww'][d][0] += parseInt(ligne[ligne.length-2]);
                 this.pays['ww'][d][1] += parseInt(ligne[ligne.length-1]);
-                this.pays['ww'].nom = "Le Monde";
             }
         }
     }
@@ -190,7 +268,12 @@ const Covid19 = {
 
 Covid19.getData();
 
-cron.schedule("5 2 * * *", ()=> Covid19.getData())
+cron.schedule("*/10 * * * *", ()=>{ 
+    Covid19.getData()
+        .then(res=>console.log("Récupéré.", Covid19.date))
+        .catch(err=>console.error(err));
+            
+});
 
 /*Connexion à bot-wawa*/
 bot.login(config.token)
