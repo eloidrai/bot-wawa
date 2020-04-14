@@ -35,6 +35,10 @@ https://github.com/eloidrai/bot-wawa`);
         message.channel.send(`**Ceci est le site d'eloidrai.**
     https://eloidrai.github.io/
 *On y trouve différentes réalisations informatiques...*`);
+    } else if (cmd === 'doc') {
+        message.channel.send(`Voici un lien vers ma documentation.
+https://github.com/eloidrai/bot-wawa/blob/master/README.md
+`);
     }
     
     /*Google*/
