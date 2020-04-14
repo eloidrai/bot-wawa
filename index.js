@@ -9,7 +9,7 @@ const config = require('./config.json');
 
 bot.once('ready',
     ()=>{
-        bot.user.setActivity("Mange des cookies sur le PC d'Éloi");
+        bot.user.setActivity("Mange des framboises");
         console.log("Bot connecté.")
     }
 )
@@ -19,7 +19,8 @@ bot.on('message', (message)=>{
     let guildId;
     try {guildId = message.channel.guild.id} catch (e) {guildId = NaN}
     const prefix = (guildId == 401667451189985280)? `~`: config.prefix;
-    
+
+ 
     /*Préfixe, commande et paramètre*/
     if (!message.content.startsWith(prefix)) return;
     const args = message.content.slice(prefix.length).split(/ +/), cmd = args.shift().toLowerCase();
@@ -74,7 +75,7 @@ ${"https://www.wolframalpha.com/input/?i="+encodeURIComponent(args.join(""))}`);
                             },
                             {
                                 name: `Humidité`,
-                                value: `${rep.current_condition.humidity}°C`
+                                value: `${rep.current_condition.humidity} %`
                             },
                             {
                                 name: `Vitesse du vent`,
@@ -268,7 +269,7 @@ const Covid19 = {
 
 Covid19.getData();
 
-cron.schedule("*/10 * * * *", ()=>{ 
+cron.schedule("* 5 * * *", ()=>{ 
     Covid19.getData()
         .then(res=>console.log("Récupéré.", Covid19.date))
         .catch(err=>console.error(err));
