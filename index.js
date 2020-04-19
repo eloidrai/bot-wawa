@@ -55,6 +55,11 @@ ${"https://www.wolframalpha.com/input/?i="+encodeURIComponent(args.join(""))}`);
         return;
     }
     
+    /*Pièce*/
+    if (cmd === 'piece'){
+        message.reply(new Discord.MessageAttachment(`./images/${(Math.random()<0.5)? 'pile.png': 'face.png'}`));
+    }
+    
     /*Météo*/
     if (cmd === 'meteo'){
         const ville = args[0] || "Caen";
@@ -271,9 +276,9 @@ const Covid19 = {
     }
 }
 
-Covid19.getData();
+Covid19.getData().catch(console.error);
 
-cron.schedule("* 5 * * *", ()=>{ 
+cron.schedule("0 * * * *", ()=>{ 
     Covid19.getData()
         .then(res=>console.log("Récupéré.", Covid19.date))
         .catch(err=>console.error(err));
